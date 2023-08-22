@@ -15,7 +15,11 @@ export default class Bot {
   private chatModel: ChatOpenAI;
   private chain: ConversationalRetrievalQAChain;
 
-  constructor(private log: any, private vectorStore: PineconeStore) {
+  constructor(
+    private log: any,
+    private vectorStore: PineconeStore,
+    private conversationRetrievelQAChain = ConversationalRetrievalQAChain
+  ) {
     this.memory = new BufferMemory({
       chatHistory: new RedisChatMessageHistory({
         sessionId: new Date().toISOString(),
@@ -30,7 +34,7 @@ export default class Bot {
       temperature: +openai_temperature,
     });
 
-    this.chain = ConversationalRetrievalQAChain.fromLLM(
+    this.chain = this.conversationRetrievelQAChain.fromLLM(
       this.chatModel,
       this.vectorStore.asRetriever(),
       {

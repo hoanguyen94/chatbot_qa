@@ -13,7 +13,7 @@ describe("document-loader", () => {
   let pineconeIndexStub: SinonStubbedInstance<VectorOperationsApi>;
   let logStub: sinon.SinonStubbedInstance<typeof log>;
   let documentLoader: DocumentLoader;
-  let pineconeStoreStub: sinon.SinonStubbedInstance<typeof PineconeStore>;
+  // let pineconeStoreStub: sinon.SinonStubbedInstance<typeof PineconeStore>;
 
   const sandbox = sinon.createSandbox();
 
@@ -21,7 +21,6 @@ describe("document-loader", () => {
     logStub = sandbox.stub(log);
     embeddingStub = sandbox.createStubInstance(OpenAIEmbeddings);
     pineconeIndexStub = sandbox.createStubInstance(VectorOperationsApi);
-    pineconeStoreStub = sinon.stub(PineconeStore);
 
     documentLoader = new DocumentLoader(
       logStub,
@@ -56,6 +55,7 @@ describe("document-loader", () => {
   });
 
   describe("upload-document", () => {
+    const pineconeStoreStub = sinon.stub(PineconeStore);
     it("upload document ok", async () => {
       const dirName = path.resolve();
       const docPath = path.join(
@@ -65,6 +65,7 @@ describe("document-loader", () => {
       const docs = await documentLoader.splitData(docPath);
 
       const pineconeStoreInstance = sinon.createStubInstance(PineconeStore);
+      // const pineconeStoreStub = sinon.stub(PineconeStore);
       pineconeStoreStub.fromDocuments.resolves(pineconeStoreInstance);
 
       const result = await documentLoader.uploadDoc(docs, pineconeStoreStub);
@@ -78,10 +79,9 @@ describe("document-loader", () => {
         "/test/test-data/Iterative-fine-tuning.pdf"
       );
       const docs = await documentLoader.splitData(docPath);
-
       const expMessage = "error when uploading docs to vector database";
+      // const pineconeStoreStub2 = sinon.stub(PineconeStore);
       pineconeStoreStub.fromDocuments.rejects(new Error(expMessage));
-
       await assert.rejects(documentLoader.uploadDoc(docs, pineconeStoreStub), {
         message: expMessage,
       });
