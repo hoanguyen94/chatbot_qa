@@ -80,7 +80,6 @@ describe("document-loader", () => {
       );
       const docs = await documentLoader.splitData(docPath);
       const expMessage = "error when uploading docs to vector database";
-      // const pineconeStoreStub2 = sinon.stub(PineconeStore);
       pineconeStoreStub.fromDocuments.rejects(new Error(expMessage));
       await assert.rejects(documentLoader.uploadDoc(docs, pineconeStoreStub), {
         message: expMessage,

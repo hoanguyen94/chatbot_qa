@@ -5,7 +5,7 @@
   "main": "server.ts",
   "type": "module",
   "scripts": {
-    "test": "mocha --recursive",
+    "test": "mocha --recursive --exit",
     "build": "rimraf dist && tsc",
     "start:dev": "ts-node src/server.ts",
     "start": "node dist/src/server.js",

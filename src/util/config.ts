@@ -5,6 +5,7 @@ const {
   OPENAI_API_TEMPERATURE,
   OPENAI_API_CHATMODEL,
   OPENAI_BATCH_SIZE,
+  OPENAI_CHAT_SOURCE,
   PINECONE_API_KEY,
   PINECONE_API_ENV,
   PINECONE_API_INDEX,
@@ -21,6 +22,7 @@ export default {
     batch_size: OPENAI_BATCH_SIZE || 512,
     openai_temperature: OPENAI_API_TEMPERATURE || 0,
     chat_model: OPENAI_API_CHATMODEL || "gpt-3.5-turbo",
+    chat_model_source: OPENAI_CHAT_SOURCE || false,
   },
   pinecone_api: {
     pinecone_key: PINECONE_API_KEY,

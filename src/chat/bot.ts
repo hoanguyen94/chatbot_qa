@@ -7,7 +7,7 @@ import { PineconeStore } from "langchain/vectorstores/pinecone";
 
 const {
   redis: { redis_url, ttl },
-  openai_api: { chat_model, openai_temperature },
+  openai_api: { chat_model, openai_temperature, chat_model_source },
 } = config;
 
 export default class Bot {
@@ -27,6 +27,9 @@ export default class Bot {
         url: redis_url,
       }),
       memoryKey: "chat_history",
+      inputKey: "question", // The key for the input to the chain
+      outputKey: "text", // The key for the final conversational output of the chain
+      returnMessages: true, // If using with a chat model (e.g. gpt-3.5 or gpt-4)
     });
 
     this.chatModel = new ChatOpenAI({
@@ -39,6 +42,7 @@ export default class Bot {
       this.vectorStore.asRetriever(),
       {
         memory: this.memory,
+        returnSourceDocuments: Boolean(chat_model_source),
       }
     );
   }
