@@ -1,0 +1,11 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+copilot
+coverage
+docker-compose.yml
+test
+users.acl
+.gitignore
+.env

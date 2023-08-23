@@ -18,13 +18,14 @@ export default class Bot {
   constructor(
     private log: any,
     private vectorStore: PineconeStore,
+    private redisClient: any,
     private conversationRetrievelQAChain = ConversationalRetrievalQAChain
   ) {
     this.memory = new BufferMemory({
       chatHistory: new RedisChatMessageHistory({
         sessionId: new Date().toISOString(),
         sessionTTL: +ttl,
-        url: redis_url,
+        client: this.redisClient,
       }),
       memoryKey: "chat_history",
       inputKey: "question", // The key for the input to the chain

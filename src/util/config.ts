@@ -11,12 +11,14 @@ const {
   PINECONE_API_INDEX,
   REDIS_URL,
   REDIS_TTL,
+  LOGGING_LEVEL,
 } = process.env;
 
 export default {
   app: {
     port: PORT || 3010,
   },
+  logging_level: LOGGING_LEVEL || "debug",
   openai_api: {
     openai_key: OPENAI_API_KEY,
     batch_size: OPENAI_BATCH_SIZE || 512,
@@ -30,7 +32,7 @@ export default {
     pinecone_index: PINECONE_API_INDEX || "chatbot-openai",
   },
   redis: {
-    redis_url: REDIS_URL || "redis://:skindex2023@localhost:6379",
+    redis_url: REDIS_URL || "redis://:chatbot@localhost:6380",
     ttl: REDIS_TTL || 300,
   },
 };
