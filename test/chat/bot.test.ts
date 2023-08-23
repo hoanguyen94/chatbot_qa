@@ -1,11 +1,7 @@
 import { afterEach, beforeEach, describe } from "node:test";
-import sinon, { SinonStubbedInstance } from "sinon";
-import DocumentLoader from "../../src/chat/documentLoader.js";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { VectorOperationsApi } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch/apis/VectorOperationsApi.js";
+import sinon from "sinon";
 import log from "../../src/util/logger.js";
 import assert from "assert";
-import path from "path";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import Bot from "../../src/chat/bot.js";
 import { ConversationalRetrievalQAChain } from "langchain/chains";
