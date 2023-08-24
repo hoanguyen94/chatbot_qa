@@ -5,6 +5,7 @@ import * as fs from "fs";
 import Bot from "../chat/bot.js";
 import Summarizer from "../chat/summarizer.js";
 import Helper from "../util/helper.js";
+import { ChainValues } from "langchain/schema";
 
 export default (
   log: any,
@@ -39,10 +40,15 @@ export default (
 
   router.post("/", express.json(), async (req, res, next) => {
     const {
-      body: { input },
+      body: { input }, query: { source },
     } = req;
     try {
-      const result = await chatbot.chat(input);
+      let result: ChainValues
+      if (source) {
+        result = await chatbot.chat(input, Boolean(source));
+      } else {
+        result = await chatbot.chat(input);
+      }
       res.status(201).json(result);
     } catch (error) {
       next(error);
@@ -50,11 +56,17 @@ export default (
   });
 
   router.post("/summarize", upload.single("paper"), async (req, res, next) => {
-    const { file } = req;
+    const { file, query: { immediateStep } } = req;
     try {
       if (file?.path) {
+        let result
         const dataSplit = await documentLoader.splitData(file.path, 5000);
-        const result = await summarizer.summarize(dataSplit);
+        if (immediateStep) {
+          result = await summarizer.summarize(dataSplit, Boolean(immediateStep));
+        } else {
+          result = await summarizer.summarize(dataSplit);
+        }
+        // delete the file
         fs.unlink(file?.path, (err) => {
           if (err) log.error(err);
           else {

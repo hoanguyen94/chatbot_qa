@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import botRouter from "./router/botRouter.js";
 import NotImplementedError from "./error/not-implemented-error.js";
 import GeneralError from "./error/general-error.js";
@@ -44,7 +44,6 @@ export default (
       error: GeneralError,
       req: Request,
       res: Response,
-      next: NextFunction
     ): void => {
       const { message, code } = error;
       const { method, url } = req;

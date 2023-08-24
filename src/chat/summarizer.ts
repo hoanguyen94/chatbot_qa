@@ -4,12 +4,10 @@ import { Document } from "langchain/document";
 import { OpenAI } from "langchain/llms/openai";
 
 export default class Summarizer {
-  private chain;
   constructor(private model: OpenAI) {
-    this.chain = this.createChain();
   }
 
-  private createChain() {
+  private createChain(returnImmediateStep = false) {
     const map_prompt = `
     Write a concise summary of the following:
     {text}
@@ -28,13 +26,15 @@ export default class Summarizer {
 
     return loadSummarizationChain(this.model, {
       type: "map_reduce",
-      combineMapPrompt: map_prompt_template,
-      combinePrompt: combined_prompt_template,
+      combineMapPrompt: combined_prompt_template,
+      combinePrompt: map_prompt_template,
+      returnIntermediateSteps: returnImmediateStep,
     });
   }
 
-  async summarize(docs: Document<Record<string, any>>[]) {
-    const response = await this.chain.call({
+  async summarize(docs: Document<Record<string, any>>[], returnImmediateStep = false) {
+    const chain = this.createChain(returnImmediateStep)
+    const response = await chain.call({
       input_documents: docs,
     });
     return response;

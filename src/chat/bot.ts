@@ -6,14 +6,13 @@ import { ConversationalRetrievalQAChain } from "langchain/chains";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 
 const {
-  redis: { redis_url, ttl },
-  openai_api: { chat_model, openai_temperature, chat_model_source },
+  redis: { ttl },
+  openai_api: { chat_model, openai_temperature },
 } = config;
 
 export default class Bot {
   private memory: BufferMemory;
   private chatModel: ChatOpenAI;
-  private chain: ConversationalRetrievalQAChain;
 
   constructor(
     private log: any,
@@ -37,20 +36,42 @@ export default class Bot {
       modelName: chat_model,
       temperature: +openai_temperature,
     });
+  }
 
-    this.chain = this.conversationRetrievelQAChain.fromLLM(
+  private createChain(source: boolean): ConversationalRetrievalQAChain {
+    const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT = `
+    Given the following conversation and a follow up question, return the conversation history excerpt that includes any relevant context to the question if it exists and rephrase the follow up question to be a standalone question.
+    Chat History:
+    {chat_history}
+
+    Follow Up Input: {question}
+    Your answer should follow the following format:
+    \`\`\`
+    Use the following pieces of context to answer the users question.
+    If you don't know the answer within this given context, please think rationally and answer from your own knowledge base.
+    ----------------
+    <Relevant chat history excerpt as context here>
+    Standalone question: <Rephrased question here>
+    \`\`\`
+    Your answer:`;
+
+    return this.conversationRetrievelQAChain.fromLLM(
       this.chatModel,
       this.vectorStore.asRetriever(),
       {
         memory: this.memory,
-        returnSourceDocuments: Boolean(chat_model_source),
+        returnSourceDocuments: source,
+        questionGeneratorChainOptions: {
+          template: CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT,
+        },
       }
     );
   }
 
-  async chat(input: string) {
+  async chat(input: string, source = false) {
     try {
-      const result = await this.chain.call({ question: input });
+      const chain = this.createChain(source)
+      const result = await chain.call({ question: input });
       return result;
     } catch (error) {
       this.log.error(

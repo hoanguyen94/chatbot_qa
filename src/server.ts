@@ -10,6 +10,7 @@ import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { OpenAI } from "langchain/llms/openai";
 import Summarizer from "./chat/summarizer.js";
 import RedisClient from "./storage/redisClient.js";
+import { RedisCache } from "langchain/cache/ioredis";
 
 const {
   app: { port },
@@ -28,7 +29,7 @@ const redisClient = RedisClient(log, redis_url);
 // initiate openai embeddings
 const embeddings = new OpenAIEmbeddings({
   openAIApiKey: openai_key,
-  batchSize: +batch_size,
+  batchSize: +batch_size
 });
 
 // initiate pinecone client and index
@@ -47,6 +48,7 @@ const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
 const model = new OpenAI({
   temperature: openai_temperature as number,
   openAIApiKey: openai_key,
+  cache: new RedisCache(redisClient)
 });
 
 const documentLoader = new DocumentLoader(log, embeddings, pineconeIndex);

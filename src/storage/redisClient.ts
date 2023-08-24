@@ -1,5 +1,4 @@
 import { Redis } from "ioredis";
-import { createClient } from "redis";
 
 export default (log: any, url: string) => {
   const client = new Redis(url);
