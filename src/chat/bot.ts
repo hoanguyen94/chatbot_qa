@@ -7,18 +7,17 @@ import { PineconeStore } from "langchain/vectorstores/pinecone";
 
 const {
   redis: { ttl },
-  openai_api: { chat_model, openai_temperature },
 } = config;
 
-export default class Bot {
+export default class QABot {
   private memory: BufferMemory;
-  private chatModel: ChatOpenAI;
 
   constructor(
     private log: any,
     private vectorStore: PineconeStore,
     private redisClient: any,
-    private conversationRetrievelQAChain = ConversationalRetrievalQAChain
+    private chatModel: ChatOpenAI,
+    private conversationRetrievelQAChain = ConversationalRetrievalQAChain,
   ) {
     this.memory = new BufferMemory({
       chatHistory: new RedisChatMessageHistory({
@@ -31,15 +30,13 @@ export default class Bot {
       outputKey: "text", // The key for the final conversational output of the chain
       returnMessages: true, // If using with a chat model (e.g. gpt-3.5 or gpt-4)
     });
-
-    this.chatModel = new ChatOpenAI({
-      modelName: chat_model,
-      temperature: +openai_temperature,
-    });
   }
 
   private createChain(source: boolean): ConversationalRetrievalQAChain {
+
+
     const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT = `
+    You are a helpful researcher assistant.
     Given the following conversation and a follow up question, return the conversation history excerpt that includes any relevant context to the question if it exists and rephrase the follow up question to be a standalone question.
     Chat History:
     {chat_history}
@@ -48,7 +45,7 @@ export default class Bot {
     Your answer should follow the following format:
     \`\`\`
     Use the following pieces of context to answer the users question.
-    If you don't know the answer within this given context, please think rationally and answer from your own knowledge base.
+    If you don't know the answer within this given context, please think rationally and answer from your own knowledge base. If you don't know the answer, say you don't know.
     ----------------
     <Relevant chat history excerpt as context here>
     Standalone question: <Rephrased question here>

@@ -5,12 +5,14 @@ import GeneralError from "./error/general-error.js";
 import DocumentLoader from "./chat/documentLoader.js";
 import Bot from "./chat/bot.js";
 import Summarizer from "./chat/summarizer.js";
+import ChattyAgent from "./chat/agent.js";
 
 export default (
   log: any,
   documentLoader: DocumentLoader,
-  chatbot: Bot,
-  summarizer: Summarizer
+  qaBot: Bot,
+  summarizer: Summarizer,
+  chatBot: ChattyAgent
 ) => {
   const app = express();
 
@@ -32,7 +34,7 @@ export default (
     res.status(200).type("text/plain").send("OK");
   });
 
-  app.use("/", botRouter(log, documentLoader, chatbot, summarizer));
+  app.use("/", botRouter(log, documentLoader, qaBot, summarizer, chatBot));
 
   app.use((req, res, next) => {
     const error = new NotImplementedError();

@@ -6,12 +6,14 @@ import Bot from "../chat/bot.js";
 import Summarizer from "../chat/summarizer.js";
 import Helper from "../util/helper.js";
 import { ChainValues } from "langchain/schema";
+import ChattyAgent from "../chat/agent.js";
 
 export default (
   log: any,
   documentLoader: DocumentLoader,
-  chatbot: Bot,
-  summarizer: Summarizer
+  qaBot: Bot,
+  summarizer: Summarizer,
+  chatBot: ChattyAgent
 ) => {
   const router = express.Router();
   const upload_des = Helper.createFolder("uploads");
@@ -45,10 +47,22 @@ export default (
     try {
       let result: ChainValues
       if (source) {
-        result = await chatbot.chat(input, Boolean(source));
+        result = await qaBot.chat(input, Boolean(source));
       } else {
-        result = await chatbot.chat(input);
+        result = await qaBot.chat(input);
       }
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post("/chatty", express.json(), async (req, res, next) => {
+    const {
+      body: { input },
+    } = req;
+    try {
+      const result = await chatBot.chat(input);
       res.status(201).json(result);
     } catch (error) {
       next(error);

@@ -5,18 +5,21 @@ import log from "./util/logger.js";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import pinecone from "../src/storage/clientIndex.js";
 import DocumentLoader from "./chat/documentLoader.js";
-import Bot from "./chat/bot.js";
+import QABot from "./chat/bot.js";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { OpenAI } from "langchain/llms/openai";
 import Summarizer from "./chat/summarizer.js";
 import RedisClient from "./storage/redisClient.js";
 import { RedisCache } from "langchain/cache/ioredis";
+import ChattyAgent from "./chat/agent.js";
+import { ChatOpenAI } from "langchain/chat_models";
+
 
 const {
   app: { port },
   openai_api: { openai_key, batch_size },
   pinecone_api: { pinecone_key, pinecone_env, pinecone_index },
-  openai_api: { openai_temperature },
+  openai_api: { openai_temperature, chat_model },
   redis: { redis_url },
   logging_level,
 } = config;
@@ -51,13 +54,19 @@ const model = new OpenAI({
   cache: new RedisCache(redisClient)
 });
 
+const chatModel = new ChatOpenAI({
+  modelName: chat_model,
+  temperature: +openai_temperature,
+});
+
 const documentLoader = new DocumentLoader(log, embeddings, pineconeIndex);
-const chatbot = new Bot(log, vectorStore, redisClient);
+const qaBot = new QABot(log, vectorStore, redisClient, chatModel);
+const chatBot = new ChattyAgent(log, vectorStore, redisClient, chatModel);
 
 // summarizer
 const summarizer = new Summarizer(model);
 
-const app = application(log, documentLoader, chatbot, summarizer);
+const app = application(log, documentLoader, qaBot, summarizer, chatBot);
 const server = app
   .listen(port, async () => {
     log.info(`Server is listening on http://localhost:${port}`);
