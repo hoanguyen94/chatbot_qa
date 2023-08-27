@@ -11,6 +11,7 @@ const {
   REDIS_URL,
   REDIS_TTL,
   LOGGING_LEVEL,
+  DATABASE_URL
 } = process.env;
 
 export default {
@@ -33,4 +34,7 @@ export default {
     redis_url: REDIS_URL || "redis://:chatbot@localhost:6379",
     ttl: REDIS_TTL || 300,
   },
+  postgres: {
+    postgres_url: DATABASE_URL || "postgresql://chatbot:chatbot2023@localhost:5432/chatbot"
+  }
 };

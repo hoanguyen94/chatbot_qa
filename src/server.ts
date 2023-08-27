@@ -12,7 +12,11 @@ import Summarizer from "./chat/summarizer.js";
 import RedisClient from "./storage/redisClient.js";
 import { RedisCache } from "langchain/cache/ioredis";
 import ChattyAgent from "./chat/agent.js";
-import { ChatOpenAI } from "langchain/chat_models";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import sqlClient from "./storage/typeorm/sqlClient.js";
+import { SqlDatabase } from "langchain/sql_db";
+import { InfluencerStorateService } from "./storage/typeorm/influencers-storage.js";
+import { SQLAgent } from "./chat/sqlAgent.js";
 
 
 const {
@@ -26,8 +30,18 @@ const {
 
 log.setLoggingLevel(logging_level);
 
+sqlClient.initialize()
 // create redis client
 const redisClient = RedisClient(log, redis_url);
+
+// create prisma client for sql database
+const influencerStorage = new InfluencerStorateService(log, sqlClient)
+
+// create sql database
+const db = await SqlDatabase.fromDataSourceParams({
+  appDataSource: sqlClient
+})
+
 
 // initiate openai embeddings
 const embeddings = new OpenAIEmbeddings({
@@ -54,11 +68,14 @@ const model = new OpenAI({
   cache: new RedisCache(redisClient)
 });
 
+// initiate chat model
 const chatModel = new ChatOpenAI({
   modelName: chat_model,
   temperature: +openai_temperature,
 });
 
+// create sql agent
+const sqlAgent = new SQLAgent(log, db, model)
 const documentLoader = new DocumentLoader(log, embeddings, pineconeIndex);
 const qaBot = new QABot(log, vectorStore, redisClient, chatModel);
 const chatBot = new ChattyAgent(log, vectorStore, redisClient, chatModel);
@@ -66,7 +83,7 @@ const chatBot = new ChattyAgent(log, vectorStore, redisClient, chatModel);
 // summarizer
 const summarizer = new Summarizer(model);
 
-const app = application(log, documentLoader, qaBot, summarizer, chatBot);
+const app = application(log, documentLoader, qaBot, summarizer, chatBot, influencerStorage, sqlAgent);
 const server = app
   .listen(port, async () => {
     log.info(`Server is listening on http://localhost:${port}`);
@@ -76,6 +93,7 @@ const server = app
 const shutdown = () =>
   server.close(async () => {
     log.info("server closed");
+    await sqlClient.destroy()
     process.exit();
   });
 

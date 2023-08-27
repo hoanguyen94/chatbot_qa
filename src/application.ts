@@ -6,13 +6,18 @@ import DocumentLoader from "./chat/documentLoader.js";
 import Bot from "./chat/bot.js";
 import Summarizer from "./chat/summarizer.js";
 import ChattyAgent from "./chat/agent.js";
+import { InfluencerStorateService } from "./storage/typeorm/influencers-storage.js";
+import influencerRouter from "./router/influencerRouter.js";
+import { SQLAgent } from "./chat/sqlAgent.js";
 
 export default (
   log: any,
   documentLoader: DocumentLoader,
   qaBot: Bot,
   summarizer: Summarizer,
-  chatBot: ChattyAgent
+  chatBot: ChattyAgent,
+  influenceStorage: InfluencerStorateService,
+  sqlAgent: SQLAgent
 ) => {
   const app = express();
 
@@ -34,7 +39,8 @@ export default (
     res.status(200).type("text/plain").send("OK");
   });
 
-  app.use("/", botRouter(log, documentLoader, qaBot, summarizer, chatBot));
+  app.use("/", botRouter(log, documentLoader, qaBot, summarizer, chatBot, sqlAgent));
+  app.use("/influencer", influencerRouter(log, influenceStorage))
 
   app.use((req, res, next) => {
     const error = new NotImplementedError();

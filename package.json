@@ -12,7 +12,10 @@
     "watch": "nodemon src/server.ts",
     "db:dev:up": "docker compose up -d --remove-orphans",
     "db:dev:down": "docker compose down -v",
-    "test:coverage": "c8 --check-coverage --lines 80 --function 80 --branch 80 npm test"
+    "test:coverage": "c8 --check-coverage --lines 80 --function 80 --branch 80 npm test",
+    "schema-generated": "typeorm-ts-node-esm migration:generate src/storage/typeorm/migrations/migrations -d src/storage/typeorm/sqlClient.ts",
+    "typeorm": "typeorm-ts-node-esm",
+    "schema-sync": "typeorm-ts-node-esm -d src/storage/typeorm/sqlClient.ts "
   },
   "repository": {
     "type": "git",
@@ -47,12 +50,14 @@
     "@types/multer": "^1.4.7",
     "@types/sinon": "^10.0.16",
     "cf-nodejs-logging-support": "^7.1.0",
+    "d3-dsv": "^2.0.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "ioredis": "^5.3.2",
     "langchain": "^0.0.131",
     "multer": "^1.4.5-lts.1",
     "pdf-parse": "^1.1.1",
+    "pg": "^8.11.3",
     "redis": "^4.6.7",
     "rimraf": "^5.0.1"
   },
