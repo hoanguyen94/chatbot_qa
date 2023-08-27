@@ -40,7 +40,7 @@ describe("document-loader", () => {
         dirName,
         "/test/test-data/Iterative-fine-tuning.pdf"
       );
-      const result = await documentLoader.splitData(docPath);
+      const result = await documentLoader.splitPDFData(docPath);
       assert.ok(result.length >= 1);
     });
 
@@ -48,7 +48,7 @@ describe("document-loader", () => {
       const docPath = "/test/test-data/Iterative-fine-tuning.pdf";
       const expMessage = `ENOENT: no such file or directory, open '${docPath}'`;
 
-      await assert.rejects(documentLoader.splitData(docPath), {
+      await assert.rejects(documentLoader.splitPDFData(docPath), {
         message: expMessage,
       });
     });
@@ -62,7 +62,7 @@ describe("document-loader", () => {
         dirName,
         "/test/test-data/Iterative-fine-tuning.pdf"
       );
-      const docs = await documentLoader.splitData(docPath);
+      const docs = await documentLoader.splitPDFData(docPath);
 
       const pineconeStoreInstance = sinon.createStubInstance(PineconeStore);
       // const pineconeStoreStub = sinon.stub(PineconeStore);
@@ -78,7 +78,7 @@ describe("document-loader", () => {
         dirName,
         "/test/test-data/Iterative-fine-tuning.pdf"
       );
-      const docs = await documentLoader.splitData(docPath);
+      const docs = await documentLoader.splitPDFData(docPath);
       const expMessage = "error when uploading docs to vector database";
       pineconeStoreStub.fromDocuments.rejects(new Error(expMessage));
       await assert.rejects(documentLoader.uploadDoc(docs, pineconeStoreStub), {

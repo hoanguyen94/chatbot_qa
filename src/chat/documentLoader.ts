@@ -5,6 +5,7 @@ import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { VectorOperationsApi } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch/apis/VectorOperationsApi.js";
 import { CSVLoader } from "langchain/document_loaders/fs/csv";
+import BadRequestError from "../error/bad-request-error.js";
 
 export default class DocumentLoader {
   constructor(
@@ -33,13 +34,24 @@ export default class DocumentLoader {
         "Error when splitting pdf document: %s",
         (error as Error).message
       );
-      throw error;
+      throw new BadRequestError((error as Error).message);
     }
   }
 
-  async loadCSV(pdfDocPath: string): Promise<Document<Record<string, any>>[]> {
-    const loader = new CSVLoader(pdfDocPath)
-    return await loader.load()
+  async loadCSV(docPath: string): Promise<Document<Record<string, any>>[]> {
+    try {
+      const loader = new CSVLoader(docPath)
+      const result = await loader.load()
+      this.log.info(`Upload the csv file to pinecone successfully`);
+      return result
+    } catch (error) {
+      this.log.error(
+        "Error when uploading csv files: %s",
+        (error as Error).message
+      );
+      throw new BadRequestError((error as Error).message);
+    }
+
   }
 
   async uploadDoc(
@@ -57,7 +69,7 @@ export default class DocumentLoader {
         "Error when uploading document to vector database: %s",
         (error as Error).message
       );
-      throw error;
+      throw new BadRequestError((error as Error).message);
     }
   }
 }

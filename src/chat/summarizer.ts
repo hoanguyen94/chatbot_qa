@@ -2,9 +2,10 @@ import { PromptTemplate } from "langchain/prompts";
 import { loadSummarizationChain } from "langchain/chains";
 import { Document } from "langchain/document";
 import { OpenAI } from "langchain/llms/openai";
+import BadRequestError from "../error/bad-request-error.js";
 
 export default class Summarizer {
-  constructor(private model: OpenAI) {
+  constructor(private log: any, private model: OpenAI) {
   }
 
   private createChain(returnImmediateStep = false) {
@@ -26,10 +27,18 @@ export default class Summarizer {
   }
 
   async summarize(docs: Document<Record<string, any>>[], returnImmediateStep = false) {
-    const chain = this.createChain(returnImmediateStep)
-    const response = await chain.call({
-      input_documents: docs,
-    });
-    return response;
+    try {
+      const chain = this.createChain(returnImmediateStep)
+      const response = await chain.call({
+        input_documents: docs,
+      });
+      return response;
+    } catch (error) {
+      this.log.error(
+        "Error when summarizing %s",
+        (error as Error).message
+      );
+      throw new BadRequestError((error as Error).message)
+    }
   }
 }

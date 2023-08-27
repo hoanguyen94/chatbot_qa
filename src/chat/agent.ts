@@ -6,6 +6,7 @@ import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { OpenAIAgentTokenBufferMemory, createRetrieverTool } from "langchain/agents/toolkits";
 import { Calculator } from "langchain/tools/calculator";
+import BadRequestError from "../error/bad-request-error.js";
 
 const {
   redis: { ttl },
@@ -68,7 +69,7 @@ export default class ChattyAgent {
         "Error when having a conversation %s",
         (error as Error).message
       );
-      throw error;
+      throw new BadRequestError((error as Error).message);
     }
   }
 }

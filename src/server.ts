@@ -74,14 +74,14 @@ const chatModel = new ChatOpenAI({
   temperature: +openai_temperature,
 });
 
-// create sql agent
+// initialize agents
 const sqlAgent = new SQLAgent(log, db, model)
 const documentLoader = new DocumentLoader(log, embeddings, pineconeIndex);
 const qaBot = new QABot(log, vectorStore, redisClient, chatModel);
 const chatBot = new ChattyAgent(log, vectorStore, redisClient, chatModel);
 
 // summarizer
-const summarizer = new Summarizer(model);
+const summarizer = new Summarizer(log, model);
 
 const app = application(log, documentLoader, qaBot, summarizer, chatBot, influencerStorage, sqlAgent);
 const server = app
@@ -94,6 +94,7 @@ const shutdown = () =>
   server.close(async () => {
     log.info("server closed");
     await sqlClient.destroy()
+    redisClient.quit()
     process.exit();
   });
 

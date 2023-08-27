@@ -12,10 +12,10 @@
     "watch": "nodemon src/server.ts",
     "db:dev:up": "docker compose up -d --remove-orphans",
     "db:dev:down": "docker compose down -v",
-    "test:coverage": "c8 --check-coverage --lines 80 --function 80 --branch 80 npm test",
+    "test:coverage": "c8 --check-coverage --lines 80 --function 80 --branch 80 npm test --all",
     "schema-generated": "typeorm-ts-node-esm migration:generate src/storage/typeorm/migrations/migrations -d src/storage/typeorm/sqlClient.ts",
     "typeorm": "typeorm-ts-node-esm",
-    "schema-sync": "typeorm-ts-node-esm -d src/storage/typeorm/sqlClient.ts "
+    "schema-sync": "typeorm-ts-node-esm -d src/storage/typeorm/sqlClient.ts"
   },
   "repository": {
     "type": "git",

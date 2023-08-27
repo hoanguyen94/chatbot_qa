@@ -10,6 +10,8 @@ RUN npm ci --omit=dev
 
 COPY dist/src ./dist/src/
 
+RUN npm run typeorm -- -d ./app/dist/src/typeorm/sqlclient.js
+
 EXPOSE 80
 
 CMD [ "npm", "start" ]

@@ -11,6 +11,5 @@ const client = new DataSource({
   logging: true,
   // synchronize: true
 })
-// await client.initialize()
 export default client;
 
