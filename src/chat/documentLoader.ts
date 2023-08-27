@@ -4,17 +4,18 @@ import { Document } from "langchain/document";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { VectorOperationsApi } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch/apis/VectorOperationsApi.js";
+import { CSVLoader } from "langchain/document_loaders/fs/csv";
 
 export default class DocumentLoader {
   constructor(
     private log: any,
     private embeddings: OpenAIEmbeddings,
     private pineconeIndex: VectorOperationsApi
-  ) {}
+  ) { }
 
-  async splitData(pdfDocuments: string, chunkSize = 1000, chunkOverlap = 0) {
+  async splitPDFData(pdfDocPath: string, chunkSize = 1000, chunkOverlap = 0): Promise<Document<Record<string, any>>[]> {
     try {
-      const loader = new PDFLoader(pdfDocuments);
+      const loader = new PDFLoader(pdfDocPath);
       const docs = await loader.load();
       this.log.info(`You have ${docs.length} documents`);
 
@@ -36,10 +37,15 @@ export default class DocumentLoader {
     }
   }
 
+  async loadCSV(pdfDocPath: string): Promise<Document<Record<string, any>>[]> {
+    const loader = new CSVLoader(pdfDocPath)
+    return await loader.load()
+  }
+
   async uploadDoc(
     docs: Document<Record<string, any>>[],
     pineconeStore = PineconeStore
-  ) {
+  ): Promise<PineconeStore> {
     try {
       const result = await pineconeStore.fromDocuments(docs, this.embeddings, {
         pineconeIndex: this.pineconeIndex,

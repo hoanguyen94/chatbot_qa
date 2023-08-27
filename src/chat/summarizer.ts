@@ -8,26 +8,19 @@ export default class Summarizer {
   }
 
   private createChain(returnImmediateStep = false) {
-    const map_prompt = `
-    Write a concise summary of the following:
-    {text}
-    CONCISE SUMMARY:
-    `;
-
     const combine_prompt = `
     Write a concise summary of the following text delimited by triple doublequotes.
     Return your response in bullet points which covers the key points of the text.
     """{text}"""
     BULLET POINT SUMMARY:
     `;
-    const map_prompt_template = PromptTemplate.fromTemplate(map_prompt);
     const combined_prompt_template =
       PromptTemplate.fromTemplate(combine_prompt);
 
     return loadSummarizationChain(this.model, {
       type: "map_reduce",
       combineMapPrompt: combined_prompt_template,
-      combinePrompt: map_prompt_template,
+      combinePrompt: combined_prompt_template,
       returnIntermediateSteps: returnImmediateStep,
     });
   }

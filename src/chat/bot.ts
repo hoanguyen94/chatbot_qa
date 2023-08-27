@@ -4,6 +4,7 @@ import { ChatOpenAI } from "langchain/chat_models/openai";
 import { RedisChatMessageHistory } from "langchain/stores/message/ioredis";
 import { ConversationalRetrievalQAChain } from "langchain/chains";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
+import BadRequestError from "../error/bad-request-error.js";
 
 const {
   redis: { ttl },
@@ -33,24 +34,16 @@ export default class QABot {
   }
 
   private createChain(source: boolean): ConversationalRetrievalQAChain {
+    // const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT = `
+    // You are a helpful and formal researcher assistant.
+    // Given the following conversation and a follow up question.
+    // Context:
+    // {context}
 
+    // Follow Up Input: {question}
 
-    const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT = `
-    You are a helpful researcher assistant.
-    Given the following conversation and a follow up question, return the conversation history excerpt that includes any relevant context to the question if it exists and rephrase the follow up question to be a standalone question.
-    Chat History:
-    {chat_history}
-
-    Follow Up Input: {question}
-    Your answer should follow the following format:
-    \`\`\`
-    Use the following pieces of context to answer the users question.
-    If you don't know the answer within this given context, please think rationally and answer from your own knowledge base. If you don't know the answer, say you don't know.
-    ----------------
-    <Relevant chat history excerpt as context here>
-    Standalone question: <Rephrased question here>
-    \`\`\`
-    Your answer:`;
+    // Use the following pieces of context to answer the users question.
+    // If you don't know the answer within this given context, please think rationally and answer from your own knowledge base. If you don't know the answer, say you don't know.`;
 
     return this.conversationRetrievelQAChain.fromLLM(
       this.chatModel,
@@ -58,9 +51,9 @@ export default class QABot {
       {
         memory: this.memory,
         returnSourceDocuments: source,
-        questionGeneratorChainOptions: {
-          template: CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT,
-        },
+        // questionGeneratorChainOptions: {
+        //   template: CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT,
+        // },
       }
     );
   }
@@ -75,7 +68,7 @@ export default class QABot {
         "Error when having a conversation %s",
         (error as Error).message
       );
-      throw error;
+      throw new BadRequestError((error as Error).message)
     }
   }
 }

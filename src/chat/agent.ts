@@ -3,8 +3,9 @@ import { BufferMemory } from "langchain/memory";
 import { RedisChatMessageHistory } from "langchain/stores/message/ioredis";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
-import { ChatOpenAI } from "langchain/chat_models";
+import { ChatOpenAI } from "langchain/chat_models/openai";
 import { OpenAIAgentTokenBufferMemory, createRetrieverTool } from "langchain/agents/toolkits";
+import { Calculator } from "langchain/tools/calculator";
 
 const {
   redis: { ttl },
@@ -35,7 +36,9 @@ export default class ChattyAgent {
   }
 
   private async createAgent() {
-    const TEMPLATE = `You are a chatty and friendly teenage research assistant. If you don't know how to answer a question, use the available tools to look up relevant information.`;
+    const TEMPLATE = `You are a chatty and friendly teenage research assistant. Saying ta-da a lot. Return your response in bullet points which covers the key points of the text.
+    Each bullet point is one separate line. If you don't know how to answer a question, use the available tools to look up relevant information.
+    BULLET POINTS:`;
 
     const retriever = this.vectorStore.asRetriever();
     const tool = createRetrieverTool(retriever, {
@@ -43,7 +46,7 @@ export default class ChattyAgent {
       description: "Searches and returns up-to-date general information.",
     });
 
-    const executor = await initializeAgentExecutorWithOptions([tool], this.chatModel, {
+    const executor = await initializeAgentExecutorWithOptions([tool, new Calculator()], this.chatModel, {
       agentType: "openai-functions",
       memory: this.memory,
       returnIntermediateSteps: true,
@@ -51,6 +54,7 @@ export default class ChattyAgent {
       agentArgs: {
         prefix: TEMPLATE,
       },
+      maxIterations: 3
     });
     return executor
   }
