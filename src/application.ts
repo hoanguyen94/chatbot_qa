@@ -39,8 +39,8 @@ export default (
     res.status(200).type("text/plain").send("OK");
   });
 
-  app.use("/", botRouter(log, documentLoader, qaBot, summarizer, chatBot, sqlAgent));
-  app.use("/influencer", influencerRouter(log, influenceStorage))
+  app.use("/chatbot", botRouter(log, documentLoader, qaBot, summarizer, chatBot, sqlAgent));
+  app.use("/chatbot/influencer", influencerRouter(log, influenceStorage))
 
   app.use((req, res, next) => {
     const error = new NotImplementedError();

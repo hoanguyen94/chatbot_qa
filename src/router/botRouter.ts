@@ -64,7 +64,7 @@ export default (
     }
   });
 
-  router.post("/", express.json(), async (req, res, next) => {
+  router.post("/qachat", express.json(), async (req, res, next) => {
     const {
       body: { input }, query: { source },
     } = req;
