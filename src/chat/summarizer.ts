@@ -5,8 +5,7 @@ import { OpenAI } from "langchain/llms/openai";
 import BadRequestError from "../error/bad-request-error.js";
 
 export default class Summarizer {
-  constructor(private log: any, private model: OpenAI) {
-  }
+  constructor(private log: any, private model: OpenAI) {}
 
   private createChain(returnImmediateStep = false) {
     const combine_prompt = `
@@ -26,19 +25,19 @@ export default class Summarizer {
     });
   }
 
-  async summarize(docs: Document<Record<string, any>>[], returnImmediateStep = false) {
+  async summarize(
+    docs: Document<Record<string, any>>[],
+    returnImmediateStep = false
+  ) {
     try {
-      const chain = this.createChain(returnImmediateStep)
+      const chain = this.createChain(returnImmediateStep);
       const response = await chain.call({
         input_documents: docs,
       });
       return response;
     } catch (error) {
-      this.log.error(
-        "Error when summarizing %s",
-        (error as Error).message
-      );
-      throw new BadRequestError((error as Error).message)
+      this.log.error("Error when summarizing %s", (error as Error).message);
+      throw new BadRequestError((error as Error).message);
     }
   }
 }

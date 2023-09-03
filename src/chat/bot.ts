@@ -2,9 +2,14 @@ import config from "../util/config.js";
 import { BufferMemory } from "langchain/memory";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { RedisChatMessageHistory } from "langchain/stores/message/ioredis";
-import { ConversationalRetrievalQAChain } from "langchain/chains";
+import {
+  ConversationalRetrievalQAChain,
+  createExtractionChain,
+} from "langchain/chains";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import BadRequestError from "../error/bad-request-error.js";
+import { topics } from "../data/topics.js";
+import { FunctionParameters } from "langchain/output_parsers";
 
 const {
   redis: { ttl },
@@ -18,7 +23,7 @@ export default class QABot {
     private vectorStore: PineconeStore,
     private redisClient: any,
     private chatModel: ChatOpenAI,
-    private conversationRetrievelQAChain = ConversationalRetrievalQAChain,
+    private conversationRetrievelQAChain = ConversationalRetrievalQAChain
   ) {
     this.memory = new BufferMemory({
       chatHistory: new RedisChatMessageHistory({
@@ -60,7 +65,7 @@ export default class QABot {
 
   async chat(input: string, source = false) {
     try {
-      const chain = this.createChain(source)
+      const chain = this.createChain(source);
       const result = await chain.call({ question: input });
       return result;
     } catch (error) {
@@ -68,7 +73,32 @@ export default class QABot {
         "Error when having a conversation %s",
         (error as Error).message
       );
-      throw new BadRequestError((error as Error).message)
+      throw new BadRequestError((error as Error).message);
+    }
+  }
+
+  async extractTopic(input: string) {
+    const schema: FunctionParameters = {
+      properties: {
+        topic: {
+          type: "string",
+          description: "The type of content being described",
+          enum: topics,
+        },
+      },
+      required: ["topic"],
+      type: "object",
+    };
+
+    try {
+      const chain = createExtractionChain(schema, this.chatModel);
+      return await chain.run(input);
+    } catch (error) {
+      this.log.error(
+        "Error when extracting topics %s",
+        (error as Error).message
+      );
+      throw new BadRequestError((error as Error).message);
     }
   }
 }
